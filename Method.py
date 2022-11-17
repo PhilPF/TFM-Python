@@ -7,7 +7,7 @@ Created on Thu Nov 17 19:23:50 2022
 
 import numpy as np
 
-class Implicit:
+class Explicit:
     
     t=[]
     jets=[]
@@ -38,4 +38,5 @@ class Implicit:
         
     def __euler(self,h,f,y):
         return y+f(y)*h
+
         
