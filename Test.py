@@ -17,8 +17,8 @@ class Jet:
         s = ""
         for i in range(self.order):
             if i==0: s+=str(self.jet[i])
-            elif i==1: s+='+'+str(self.jet[i])+'x'
-            else: s+='+'+str(self.jet[i])+'x^'+str(i)
+            elif i==1: s+='+'+str(self.jet[i])+'x' if self.jet[i]>=0 else str(self.jet[i])+'x'
+            else: s+= '+'+str(self.jet[i])+'x^'+str(i) if self.jet[i]>=0 else str(self.jet[i])+'x^'+str(i)
         return str(s)
     
     def __add__(self, other):
@@ -28,7 +28,7 @@ class Jet:
             for n in range(self.order):
                 result[n]=self.jet[n]+otherJet[n]
             return Jet(result)
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
              return Jet([other+d for d in self.jet])
 
     def __sub__(self, other):
@@ -38,7 +38,7 @@ class Jet:
             for n in range(self.order):
                 result[n]=self.jet[n]-otherJet[n]
             return Jet(result)
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
              return Jet([other-d for d in self.jet])
         
     def __mul__(self, other):
@@ -49,8 +49,26 @@ class Jet:
                 for j in range(n+1):
                     result[n]+=self.jet[n-j]*otherJet[j]
             return Jet(result)
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
              return Jet([other*d for d in self.jet])
+         
+    def __rmul__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            return self*other
+        
+    def __truediv__(self, other):
+        if isinstance(other, Jet) and self.order==other.getOrder():
+            result = np.zeros(self.order)
+            otherJet=other.getJet()
+            result[0]=self.jet[0]/other.jet[0]
+            for n in range(1,self.order):
+                result[n]+=self.jet[n]
+                for j in range(1,n+1):
+                    result[n]-=result[n-j]*otherJet[j]
+                result[n]/=otherJet[0]
+            return Jet(result)
+        if isinstance(other, float) or isinstance(other, int):
+             return Jet([d/other for d in self.jet])
    
     def __neg__(self):
         return Jet([-d for d in self.jet])
@@ -65,10 +83,13 @@ def EulerE(h,f,y):
     return y+f(y)*h
 
 def f(y):
-    return y*(-1.0)
+    return -y
 
 t_0=0
-jet_0=Jet([1.0,0.5])
+jet_0=Jet([1.0,0.5,0.1])
+jet_1=Jet([1.0,0.5,0.1])
+
+print(jet_0/jet_1)
 
 t_F=10
 
@@ -87,7 +108,9 @@ while t[-1]<t_F:
 t[-1]=t_F
 jet.append(EulerE(t_F-t[-2],f,jet[-1]))
 
-sol=*np.array([d.getJet() for d in jet]).transpose()
+sol=np.array([d.getJet() for d in jet]).transpose()
 
 for s in sol:
     plt.plot(t,s)
+    
+print('steps: '+str(len(t)))
