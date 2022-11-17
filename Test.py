@@ -111,6 +111,28 @@ class Jet:
             result[n]/=self.jet[0]
         return cls(result)
     
+    sin=[]; cos=[]
+    def __computesincos(self):
+        sin = np.zeros(self.order)
+        cos = np.zeros(self.order)
+        sin[0]=np.sin(self.jet[0])
+        cos[0]=np.sin(self.jet[0])
+        for n in range(1,self.order):
+            for j in range(1,n+1):
+                sin[n]+=j*cos[n-j]*self.jet[j]
+                cos[n]-=j*sin[n-j]*self.jet[j]
+            sin[n]/=n
+            cos[n]/=n
+
+     @classmethod
+     def sin(cls, self):
+         if len(sin)==0: __computesincos()
+         return cls(sin)
+     
+     @classmethod
+     def cos(cls, self):
+         if len(cos)==0: __computesincos()
+         return cls(cos)
 
 def EulerE(h,f,y):
     return y+f(y)*h
