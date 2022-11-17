@@ -50,26 +50,28 @@ def EulerE(h,f,y):
 
 def f(y):
     return y*(-1.0)
-    
-N=100
-
-PF=10
 
 t_0=0
-jet_0=Jet([1.0,0.5,0.5])
+jet_0=Jet([1.0,0.5])
+
+t_F=10
+
+t=[]
+t.append(t_0)
 
 jet=[]
 jet.append(jet_0)
 
-h=(PF-1)/N
+h=0.1
+t.append(t[-1]+h)
+while t[-1]<t_F:
+    jet.append(EulerE(h,f,jet[-1]))
+    t.append(t[-1]+h)
 
-t=np.linspace(t_0,PF,N)
+t[-1]=t_F
+jet.append(EulerE(t_F-t[-2],f,jet[-1]))
 
-for i in range(N-1):
-    jet.append(EulerE(h,f,jet[i]))
-        
-plt.plot(t,*np.array([d.getJet() for d in jet]).transpose())
-    
+sol=*np.array([d.getJet() for d in jet]).transpose()
 
-
-
+for s in sol:
+    plt.plot(t,s)
