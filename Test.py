@@ -24,20 +24,36 @@ class Jet:
     def __add__(self, other):
         if isinstance(other, Jet) and self.order==other.getOrder():
             result = np.zeros(self.order)
-            for i in range(self.order):
-                result[i]=self.jet[i]+other.getJet()[i]
+            otherJet=other.getJet()
+            for n in range(self.order):
+                result[n]=self.jet[n]+otherJet[n]
             return Jet(result)
-        # if isinstance(other, float):
-        #     return Jet(other+self.jet)
+        if isinstance(other, float):
+             return Jet([other+d for d in self.jet])
+
+    def __sub__(self, other):
+        if isinstance(other, Jet) and self.order==other.getOrder():
+            result = np.zeros(self.order)
+            otherJet=other.getJet()
+            for n in range(self.order):
+                result[n]=self.jet[n]-otherJet[n]
+            return Jet(result)
+        if isinstance(other, float):
+             return Jet([other-d for d in self.jet])
         
     def __mul__(self, other):
-        # if isinstance(other, Jet) and self.order==other.getOrder():
-        #     result = np.zeros(self.order)
-        #     for i in range(self.order):
-        #         result[i]=self.jet[i]+other.getJet()[i]
-        #     return Jet(result)
+        if isinstance(other, Jet) and self.order==other.getOrder():
+            result = np.zeros(self.order)
+            otherJet=other.getJet()
+            for n in range(self.order):
+                for j in range(n+1):
+                    result[n]+=self.jet[n-j]*otherJet[j]
+            return Jet(result)
         if isinstance(other, float):
              return Jet([other*d for d in self.jet])
+   
+    def __neg__(self):
+        return Jet([-d for d in self.jet])
          
     def getJet(self): 
         return self.jet
