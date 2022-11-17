@@ -21,43 +21,43 @@ class Jet:
             else: s+= '+'+str(self.jet[i])+'x^'+str(i) if self.jet[i]>=0 else str(self.jet[i])+'x^'+str(i)
         return str(s)
     
-    def __add__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
+    def __add__(cls, self, other):
+        if isinstance(other, cls) and self.order==other.getOrder():
             result = np.zeros(self.order)
             otherJet=other.getJet()
             for n in range(self.order):
                 result[n]=self.jet[n]+otherJet[n]
-            return Jet(result)
+            return cls(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([other+d for d in self.jet])
+             return cls([other+d for d in self.jet])
 
-    def __sub__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
+    def __sub__(cls, self, other):
+        if isinstance(other, cls) and self.order==other.getOrder():
             result = np.zeros(self.order)
             otherJet=other.getJet()
             for n in range(self.order):
                 result[n]=self.jet[n]-otherJet[n]
-            return Jet(result)
+            return cls(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([other-d for d in self.jet])
+             return cls([other-d for d in self.jet])
         
-    def __mul__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
+    def __mul__(cls, self, other):
+        if isinstance(other, cls) and self.order==other.getOrder():
             result = np.zeros(self.order)
             otherJet=other.getJet()
             for n in range(self.order):
                 for j in range(n+1):
                     result[n]+=self.jet[n-j]*otherJet[j]
-            return Jet(result)
+            return cls(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([other*d for d in self.jet])
+             return cls([other*d for d in self.jet])
          
     def __rmul__(self, other):
         if isinstance(other, float) or isinstance(other, int):
             return self*other
         
-    def __truediv__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
+    def __truediv__(cls, self, other):
+        if isinstance(other, cls) and self.order==other.getOrder():
             result = np.zeros(self.order)
             otherJet=other.getJet()
             result[0]=self.jet[0]/other.jet[0]
@@ -66,18 +66,51 @@ class Jet:
                 for j in range(1,n+1):
                     result[n]-=result[n-j]*otherJet[j]
                 result[n]/=otherJet[0]
-            return Jet(result)
+            return cls(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([d/other for d in self.jet])
+             return cls([d/other for d in self.jet])
    
-    def __neg__(self):
-        return Jet([-d for d in self.jet])
-         
+    def __pow__(cls, self, val):
+        if isinstance(val, float) or isinstance(val, int):
+            result = np.zeros(self.order)
+            result[0]=self.jet[0]**val
+            for n in range(1,self.order):
+                result[n]+=self.jet[n]
+                for j in range(n):
+                    result[n]+=(n*val-j*(val+1))*self.jet[n-j]*result[j]
+                result[n]/=(n*self.jet[0])
+            return cls(result)
+        
+    def __neg__(cls, self):
+        return cls([-d for d in self.jet])
+    
     def getJet(self): 
         return self.jet
     
     def getOrder(self): 
         return self.order
+
+    @classmethod
+    def exp(cls, self):
+        result = np.zeros(self.order)
+        result[0]=np.exp(self.jet[0])
+        for n in range(1,self.order):
+            for j in range(n):
+                result[n]+=(n-j)*self.jet[n-j]*result[j]
+            result[n]/=n
+        return cls(result)
+
+    @classmethod
+    def ln(cls, self):
+        result = np.zeros(self.order)
+        result[0]=np.ln(self.jet[0])
+        for n in range(1,self.order):
+            result[n]+=self.jet[n]
+            for j in range(1,n):
+                result[n]-=(n-j)*self.jet[n]*result[n-j]/n
+            result[n]/=self.jet[0]
+        return cls(result)
+    
 
 def EulerE(h,f,y):
     return y+f(y)*h
