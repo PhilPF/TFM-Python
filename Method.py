@@ -57,11 +57,21 @@ class Explicit:
         return self.__iterate(f,self.__RK)
     
     a=[];b=[];c=[]
-    
     def __RK(self, h, f, t, y):
         k=[]
         k.append(f(t,y))
         for i in range(1,self.s):
             k.append(f(t+h*sum(self.c[1:i+1]),y+h*Jet.dot(self.a[i,0:i],k[0:i])))
             
-        return y+h*Jet.dot(self.b,k)    
+        return y+h*Jet.dot(self.b,k)  
+    
+    def AB2(self, f):
+        self.u=[0,1]
+        self.v=[-1/2,3/2]
+    
+    u=[];v=[]
+    def __multistep(self, h, f, t, y):
+        k=[]
+        for i in range(self.s-1):
+            k.append(f(t[i],y[i]))
+        return Jet.dot(self.u,y)-h*Jet.dot(self.v, k)
