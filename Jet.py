@@ -29,6 +29,10 @@ class Jet:
             return Jet(result)
         if isinstance(other, float) or isinstance(other, int):
              return Jet([other+d for d in self.jet])
+         
+    def __radd__(self, val):
+        if isinstance(val, float) or isinstance(val, int):
+            return self+val
 
     def __sub__(self, other):
         if isinstance(other, Jet) and self.order==other.getOrder():
@@ -39,6 +43,10 @@ class Jet:
             return Jet(result)
         if isinstance(other, float) or isinstance(other, int):
              return Jet([other-d for d in self.jet])
+         
+    def __rsub__(self, val):
+        if isinstance(val, float) or isinstance(val, int):
+            return self-val
         
     def __mul__(self, other):
         if isinstance(other, Jet) and self.order==other.getOrder():
@@ -139,3 +147,13 @@ class Jet:
     def cos(cls, other):
         if len(other.__cos)==0: other._computesincos()
         return cls(other.__cos)
+    
+    @classmethod
+    def dot(cls, others, values):
+        if len(others)==1 and len(values)==1:
+            return others[0]*values[0]
+        if len(values)==len(others):
+            result=values[0]*others[0]
+            for i in range(len(values)):
+                result+=values[i]*others[i]
+            return result
