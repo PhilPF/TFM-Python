@@ -56,7 +56,7 @@ class Explicit:
         
         return self.__iterate(f,self.__RK)
     
-    a=[];b=[];c=[]
+    a=[];b=[];c=[];s=0
     def __RK(self, h, f, t, y):
         k=[]
         k.append(f(t,y))
@@ -66,12 +66,14 @@ class Explicit:
         return y+h*Jet.dot(self.b,k)  
     
     def AB2(self, f):
+        extra_steps, self.t_0, self.jet_0 = Explicit(h=h,t_0=t_0,t_F=h+t_0,jet_0=jet_0).Euler(f)
         self.u=[0,1]
         self.v=[-1/2,3/2]
+        return self.__iterate(f, self.__multistep)
     
-    u=[];v=[]
+    u=[];v=[];r=0
     def __multistep(self, h, f, t, y):
         k=[]
-        for i in range(self.s-1):
+        for i in range(self.r-1):
             k.append(f(t[i],y[i]))
         return Jet.dot(self.u,y)-h*Jet.dot(self.v, k)
