@@ -19,25 +19,24 @@ class Explicit:
         self.jet_0=jet_0
         
     def __iterate(self, f, method):
-        if len(self.t)==0:
-            if isinstance(self.t_0, int) or isinstance(self.t_0, float):
-                self.t.append(self.t_0)
-            else: 
-                self.t.extend(self.t_0)
-        if len(self.jets)==0:
-            if isinstance(self.jet_0, Jet):
-                self.jets.append(self.jet_0)
-            else:
-                self.jets.extend(self.jet_0)
+        if isinstance(self.t_0, int) or isinstance(self.t_0, float):
+            self.t.append(self.t_0)
+        else: 
+            self.t.extend(self.t_0)
+        if isinstance(self.jet_0, Jet):
+            self.jets.append(self.jet_0)
+        else:
+            self.jets.extend(self.jet_0)
                         
         self.t.append(self.t[-1]+self.h)
-        while self.t[-1]<=self.t_F:
+        while self.t[-1]<self.t_F:
             # print(self.t, self.jets)
             self.jets.append(method(self.h, f, self.t[-self.r:], self.jets[-self.r:]))
             self.t.append(self.t[-1]+self.h)
-            
-        self.t[-1]=self.t_F
-        self.jets.append(method(self.t_F-self.t[-2], f, self.t[-1], self.jets[-1]))
+         
+        self.t.pop()
+        #self.t[-1]=self.t_F
+        #self.jets.append(method(self.t_F-self.t[-2], f, self.t[-1], self.jets[-1]))
         
         return len(self.t)-2,self.t, np.array([d.getJet() for d in self.jets]).transpose()
         
