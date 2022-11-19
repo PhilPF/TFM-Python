@@ -12,7 +12,7 @@ class Jet:
         self.jet=jet
         self.order=len(jet)
         
-    def __str__(self):
+    def __repr__(self):
         s = ''
         for i in range(self.order):
             if i==0: s+=str(self.jet[i])
@@ -154,6 +154,6 @@ class Jet:
             return others[0]*values[0]
         if len(values)==len(others):
             result=values[0]*others[0]
-            for i in range(len(values)):
+            for i in range(1,len(values)):
                 result+=values[i]*others[i]
             return result
