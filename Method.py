@@ -117,3 +117,61 @@ class Explicit:
         self.u =[0,0,0,0,0,-1]
         self.v=[-475/1440,2877/1440,-7298/1440,9982/1440,-7923/1440, 4277/1440]
         return self.__iterate(f, self.__multistep)
+    
+class Implicit:
+    
+    t=[]; jets=[]
+    
+    def __init__(self, *, h, t_0, t_F, jet_0):
+        self.h=h
+        self.t_0=t_0
+        self.t_F=t_F
+        self.jet_0=jet_0
+        
+    def __iterate(self, f, method):
+        if isinstance(self.t_0, int) or isinstance(self.t_0, float):
+            self.t.append(self.t_0)
+        if isinstance(self.jet_0, Jet):
+            self.jets.append(self.jet_0)
+                        
+        self.t.append(self.t[-1]+self.h)
+        while self.t[-1]<=self.t_F:
+            self.jets.append(method(self.h, f, self.t[-self.r-1:-1], self.jets[-self.r:]))
+            self.t.append(self.t[-1]+self.h)
+         
+        self.t.pop()
+        #self.t[-1]=self.t_F
+        #self.jets.append(method(self.t_F-self.t[-2], f, self.t[-1], self.jets[-1]))
+                
+        return len(self.t)-1,self.t, np.array([d.getJet() for d in self.jets]).transpose()
+        
+    def __Newton(self, *, F, f, t, y_0, tol=0.1):
+        result=y_0
+        N=10
+        for i in range(N):
+            result-=F(f,t,result,y_0)/Jet.naiveDerivative(result,f,y_0,F=F,t=t)
+        return result
+            
+    def __euler(self,f,t,y,y_0):
+        return y-y_0-self.h*f(t,y)
+            
+    def Euler(self, f):
+        if isinstance(self.t_0, int) or isinstance(self.t_0, float):
+            self.t.append(self.t_0)
+        if isinstance(self.jet_0, Jet):
+            self.jets.append(self.jet_0)
+                        
+        self.t.append(self.t[-1]+self.h)
+        while self.t[-1]<=self.t_F:
+            self.jets.append(self.__Newton(F=self.__euler, f=f, t=self.t[-1], y_0=self.jets[-1]))
+            # self.jets.append(method(self.h, f, self.t[-self.r-1:-1], self.jets[-self.r:]))
+            self.t.append(self.t[-1]+self.h)
+         
+        self.t.pop()
+        #self.t[-1]=self.t_F
+        #self.jets.append(method(self.t_F-self.t[-2], f, self.t[-1], self.jets[-1]))
+                
+        return len(self.t)-1,self.t, np.array([d.getJet() for d in self.jets]).transpose()
+            
+        
+    

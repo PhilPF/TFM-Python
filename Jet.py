@@ -157,3 +157,9 @@ class Jet:
             for i in range(1,len(values)):
                 result+=values[i]*others[i]
             return result
+        
+    @classmethod
+    def naiveDerivative(cls, other, f, y_0, *, F, t, eps=0.001):
+        if isinstance(other,cls):
+            return (F(f,t,other+eps,y_0)-F(f,t,other,y_0))/eps
+        
