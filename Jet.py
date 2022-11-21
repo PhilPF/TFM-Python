@@ -28,7 +28,9 @@ class Jet:
                 result[n]=self.jet[n]+otherJet[n]
             return Jet(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([other+d for d in self.jet])
+            otherJ=np.zeros(self.order)
+            otherJ[0]=other
+            return Jet(otherJ+self.jet)
          
     def __radd__(self, val):
         if isinstance(val, float) or isinstance(val, int):
@@ -42,11 +44,15 @@ class Jet:
                 result[n]=self.jet[n]-otherJet[n]
             return Jet(result)
         if isinstance(other, float) or isinstance(other, int):
-             return Jet([other-d for d in self.jet])
+             otherJ=np.zeros(self.order)
+             otherJ[0]=other
+             return Jet(self.jet-otherJ)
          
     def __rsub__(self, val):
         if isinstance(val, float) or isinstance(val, int):
-            return self-val
+            otherJ=np.zeros(self.order)
+            otherJ[0]=val
+            return Jet(otherJ-self.jet)
         
     def __mul__(self, other):
         if isinstance(other, Jet) and self.order==other.getOrder():
