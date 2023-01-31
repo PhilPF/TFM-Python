@@ -20,75 +20,100 @@ class Jet:
             else: s+= '+'+str(self.jet[i])+'x^'+str(i) if self.jet[i]>=0 else str(self.jet[i])+'x^'+str(i)
         return str(s)
     
-    def __add__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
-            result = np.zeros(self.order)
+    def __different_order(self,operation,other):
+        if self.order>other.getOrder():
+            new_other=np.zeros(self.order)
             otherJet=other.getJet()
+            for n in range(other.getOrder()):
+                new_other[n]=otherJet[n]
+            return operation(self,Jet(new_other))
+        else:
+            new_self=np.zeros(other.getOrder())
+            selfJet=self.jet
             for n in range(self.order):
-                result[n]=self.jet[n]+otherJet[n]
-            return Jet(result)
-        if isinstance(other, float) or isinstance(other, int):
-            otherJ=np.zeros(self.order)
-            otherJ[0]=other
-            return Jet(otherJ+self.jet)
+                new_self[n]=selfJet[n]
+            return operation(Jet(new_self),other)
+    
+    def __add__(self, other):
+        if isinstance(other, Jet):
+            if self.order==other.getOrder():
+                if self.order==1: return Jet([float(self.jet[0])+float(other.getJet()[0])])
+                else :
+                    result = np.zeros(self.order)
+                    otherJet=other.getJet()
+                    for n in range(self.order):
+                        result[n]=self.jet[n]+otherJet[n]
+                    return Jet(result)
+            else: return self.__different_order(Jet.__add__,other)
+        elif isinstance(other, (float, np.floating, int)):
+            return self.__different_order(Jet.__add__,Jet([other]))
          
     def __radd__(self, val):
-        if isinstance(val, float) or isinstance(val, int):
+        if isinstance(val, (float, np.floating, int)):
             return self+val
 
     def __sub__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
-            result = np.zeros(self.order)
-            otherJet=other.getJet()
-            for n in range(self.order):
-                result[n]=self.jet[n]-otherJet[n]
-            return Jet(result)
-        if isinstance(other, float) or isinstance(other, int):
-             otherJ=np.zeros(self.order)
-             otherJ[0]=other
-             return Jet(self.jet-otherJ)
+        if isinstance(other, Jet): 
+            if self.order==other.getOrder():
+                if self.order==1: return Jet([float(self.jet[0])-float(other.getJet()[0])])
+                else :
+                    result = np.zeros(self.order)
+                    otherJet=other.getJet()
+                    for n in range(self.order):
+                        result[n]=self.jet[n]-otherJet[n]
+                    return Jet(result)
+            else: return self.__different_order(Jet.__sub__,other)
+        elif isinstance(other, (float, np.floating, int)):
+             return self.__different_order(Jet.__sub__,Jet([other]))
          
     def __rsub__(self, val):
-        if isinstance(val, float) or isinstance(val, int):
-            otherJ=np.zeros(self.order)
-            otherJ[0]=val
-            return Jet(otherJ-self.jet)
+        if isinstance(val, (float, np.floating, int)):
+            return Jet([val])-self
         
     def __mul__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
-            result = np.zeros(self.order)
-            otherJet=other.getJet()
-            for n in range(self.order):
-                for j in range(n+1):
-                    result[n]+=self.jet[n-j]*otherJet[j]
-            return Jet(result)
-        if isinstance(other, float) or isinstance(other, int):
-             return Jet([other*d for d in self.jet])
+        if isinstance(other, Jet):
+            if self.order==other.getOrder():
+                if self.order==1: return Jet([float(self.jet[0])*float(other.getJet()[0])])
+                else :
+                    result = np.zeros(self.order)
+                    otherJet=other.getJet()
+                    selfJet=self.jet
+                    for n in range(self.order):
+                        for j in range(n+1):
+                            result[n]+=selfJet[n-j]*otherJet[j]
+                    return Jet(result)
+            else: return self.__different_order(Jet.__mul__,other)
+        elif isinstance(other, (float, np.floating, int)):
+             return self.__different_order(Jet.__mul__,Jet([other]))
          
     def __rmul__(self, val):
-        if isinstance(val, float) or isinstance(val, int):
-            return self*val
+        if isinstance(val, (float, np.floating, int)):
+            return Jet([val])*self
         
     def __truediv__(self, other):
-        if isinstance(other, Jet) and self.order==other.getOrder():
-            result = np.zeros(self.order)
-            otherJet=other.getJet()
-            result[0]=self.jet[0]/other.jet[0]
-            for n in range(1,self.order):
-                result[n]+=self.jet[n]
-                for j in range(1,n+1):
-                    result[n]-=result[n-j]*otherJet[j]
-                result[n]/=otherJet[0]
-            return Jet(result)
-        if isinstance(other, float) or isinstance(other, int):
-             return Jet([d/other for d in self.jet])
+        if isinstance(other, Jet) :
+            if self.order==other.getOrder():
+                if self.order==1: return Jet([float(self.jet[0])/float(other.getJet()[0])])
+                else:
+                    result = np.zeros(self.order)
+                    otherJet=other.getJet()
+                    result[0]=self.jet[0]/other.jet[0]
+                    for n in range(1,self.order):
+                        result[n]+=self.jet[n]
+                        for j in range(1,n+1):
+                            result[n]-=result[n-j]*otherJet[j]
+                        result[n]/=otherJet[0]
+                    return Jet(result)
+            else: return self.__different_order(Jet.__truediv__,other)
+        elif isinstance(other, (float, np.floating, int)):
+             return self.__different_order(Jet.__truediv__,Jet([other]))
          
     def __rtruediv__(self, val):
-        if isinstance(val, float) or isinstance(val, int):
-            return val*self.__pow__(-1)
+        if isinstance(val, (float, np.floating, int)):
+            return Jet([val])/self
    
     def __pow__(self, val):
-        if isinstance(val, float) or isinstance(val, int):
+        if isinstance(val, (float, np.floating, int)):
             result = np.zeros(self.order)
             result[0]=self.jet[0]**val
             for n in range(1,self.order):
@@ -158,14 +183,9 @@ class Jet:
     def dot(cls, others, values):
         if len(others)==1 and len(values)==1:
             return others[0]*values[0]
-        if len(values)==len(others):
+        elif len(values)==len(others):
             result=values[0]*others[0]
             for i in range(1,len(values)):
                 result+=values[i]*others[i]
             return result
-        
-    @classmethod
-    def naiveDerivative(cls, other, f, y_0, *, F, t, eps=0.001):
-        if isinstance(other,cls):
-            return (F(f,t,other+eps,y_0)-F(f,t,other,y_0))/eps
         
