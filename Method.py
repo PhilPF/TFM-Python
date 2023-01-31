@@ -131,25 +131,18 @@ class Implicit:
         self.f=f
         
     def __solve_implicit(self,method,t_0,y_0):
-        
-        print("Hey")        
-        
+                
         #Solve first the zero-order jet case
         y0_order0 = Jet([y_0.getJet()[0]])
         y=[y0_order0 for m in range(self.s)]
-        
-        print(y)
-                
+                        
         Newt_it=1
         for i in range(Newt_it):
-            method_y=method(k_0=y_0,k=y)
-            print(method_y)
-            multi_dmethod_y=[a-b for a,b in zip(method(k_0=y_0,k=[Jet([m.getJet()[0],1]) for m in y]),method_y)]  #Notice that F(y+s)=F(y)+F'(y_1)s
+            method_y=method(k_0=y0_order0,k=y)
+            multi_dmethod_y=[a-b for a,b in zip(method(k_0=y0_order0,k=[Jet([m.getJet()[0],1]) for m in y]),method_y)]  #Notice that F(y+s)=F(y)+F'(y_1)s
             dmethod_y=[Jet([m.getJet()[1]]) for m in multi_dmethod_y]
             y=[a-b for a,b in zip(y,[n/m for n,m in zip(method_y,dmethod_y)])]
-            
-        print(y)
-        
+                    
         #Solve the general N-order jet case
         for g in range(1,y_0.getOrder()):
             
@@ -158,9 +151,9 @@ class Implicit:
             #Notice y^[N]=-D_{y_0}F(a,b)y_0^[N]/D_{y}F(a,b)
                     
             y0_ncoeff=y_0.getJet()[g]
-            multi_D_y0F_y0=[a-b for a,b in zip(method(k_0=Jet([*y0_order0.getJet(),y0_ncoeff]),k=y) , method(k_0=y_0,k=y))]
+            multi_D_y0F_y0=[a-b for a,b in zip(method(k_0=Jet([*y0_order0.getJet(),y0_ncoeff]),k=y) , method(k_0=y0_order0,k=y))]
             D_y0F_y0=[m.getJet()[g] for m in multi_D_y0F_y0]
-            multi_D_yF=[a-b for a,b in zip(method(k_0=y_0,k=[Jet([*m.getJet(),1]) for m in y]) , method(k_0=y_0,k=y)) ]
+            multi_D_yF=[a-b for a,b in zip(method(k_0=y0_order0,k=[Jet([*m.getJet(),1]) for m in y]) , method(k_0=y0_order0,k=y)) ]
             D_yF=[m.getJet()[g] for m in multi_D_yF]
             
             y_n=[-n/m for n,m in zip(D_y0F_y0,D_yF)]
@@ -212,65 +205,18 @@ class Implicit:
         
         return self.__iterate(self.__RK)
     
-    def RK4(self):
-        self.s=4
-        self.a=np.zeros((self.s,self.s))
-        # self.b=np.zeros(self.s)
-        # self.c=np.zeros(self.s)
-        
-        self.a[1,0]=0.5
-        self.a[2,1]=0.5
-        self.a[3,2]=1
-        self.b=[1/6,1/3,1/3,1/6]
-        self.c=[0,1/2,1/2,1]
+    def Midpoint(self):
+        self.s=1
+        self.a=[1/2]
+        self.b=[1]
+        self.c=[1/2]
         
         return self.__iterate(self.__RK)
     
-    u=[];v=[];r=1
-    def __multistep(self, h, t, y):
-        k=[]
-        for i in range(self.r):
-            k.append(self.f(t[i],y[i]))
-        return -Jet.dot(self.u,y)+h*Jet.dot(self.v, k)
-    
-    def Euler_AB1(self):
-        self.r=1
-        self.u =[-1]
-        self.v=[1]
-        return self.__iterate(self.__multistep)
-    
-    def AB2(self):
-        self.r=2
-        extra_step , self.t_0, self.jet_0 = Explicit(h=self.h,t_0=self.t_0,t_F=(self.r-1)*self.h+self.t_0,jet_0=self.jet_0).Euler()
-        self.u =[0,-1]
-        self.v=[-1/2,3/2]
-        return self.__iterate(self.__multistep)
-    
-    def AB3(self):
-        self.r=3
-        extra_step , self.t_0, self.jet_0 = Explicit(h=self.h,t_0=self.t_0,t_F=(self.r-1)*self.h+self.t_0,jet_0=self.jet_0).Euler()
-        self.u =[0,0,-1]
-        self.v=[5/12,-16/12,23/12]
-        return self.__iterate(self.__multistep)
-    
-    def AB4(self):
-        self.r=4
-        extra_step , self.t_0, self.jet_0 = Explicit(h=self.h,t_0=self.t_0,t_F=(self.r-1)*self.h+self.t_0,jet_0=self.jet_0).Euler()
-        self.u =[0,0,0,-1]
-        self.v=[-9/24,37/24,-59/24,55/24]
-        return self.__iterate(self.__multistep)
-    
-    def AB5(self):
-        self.r=5
-        extra_step , self.t_0, self.jet_0 = Explicit(h=self.h,t_0=self.t_0,t_F=(self.r-1)*self.h+self.t_0,jet_0=self.jet_0).Euler()
-        self.u =[0,0,0,0,-1]
-        self.v=[251/720,-1274/720,2616/720,-2774/720,1901/720]
-        return self.__iterate(self.__multistep)
-    
-    def AB6(self):
-        self.r=6
-        extra_step , self.t_0, self.jet_0 = Explicit(h=self.h,t_0=self.t_0,t_F=(self.r-1)*self.h+self.t_0,jet_0=self.jet_0).Euler()
-        self.u =[0,0,0,0,0,-1]
-        self.v=[-475/1440,2877/1440,-7298/1440,9982/1440,-7923/1440, 4277/1440]
-        return self.__iterate(self.__multistep)
- 
+    def Crank_Nicolson(self):
+        self.s=2
+        self.a=np.array([[0,0],[1/2,1/2]])
+        self.b=[1/2,1/2]
+        self.c=[0,1]
+        
+        return self.__iterate(self.__RK)
