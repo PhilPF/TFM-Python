@@ -215,8 +215,10 @@ class Implicit:
     
     def Crank_Nicolson(self):
         self.s=2
-        self.a=np.array([[0,0],[1/2,1/2]])
-        self.b=[1/2,1/2]
+        self.a=np.zeros((self.s,self.s))
+        self.a[1,0]=0.5
+        self.a[1,1]=0.5
+        self.b=[0.5,0.5]
         self.c=[0,1]
         
         return self.__iterate(self.__RK)
