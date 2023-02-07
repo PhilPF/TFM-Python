@@ -14,21 +14,57 @@ def f(t,y):
     return -10*y
     # return Jet.sin(y**(3/2))
     # return Jet.exp(-Jet.sin(y)**2)
-
     
-# steps, t, sols =  Explicit(h=0.1, t_0=0, t_F=2, jet_0=Jet([2.0,1.0]), f=f).Euler()
-steps, t, sols =  Implicit(h=0.1, t_0=0, t_F=2, jet_0=Jet([2.0,1.0]), f=f).Euler()
-# steps, t, sols =  Implicit(h=0.1, t_0=0, t_F=2, jet_0=Jet([2.0,1.0]), f=f).Midpoint()
-# steps, t, sols =  Implicit(h=0.1, t_0=0, t_F=2, jet_0=Jet([2.0,1.0]), f=f).Crank_Nicolson()
+def exactsol(x): return 2*np.exp(-10*x)
+def exactvarsol(x): return 1*np.exp(-10*x)
+
+h=0.0125; t_0=0; t_F=2; jet_0=Jet([2.0,1.0]); Newt_iter=10
+
+EXPLICIT = Explicit(h=h, t_0=t_0, t_F=t_F, jet_0=jet_0, f=f)
+IMPLICIT = Implicit(h=h, t_0=t_0, t_F=t_F, jet_0=jet_0, f=f, Newt_iter=Newt_iter)
 
 
-for sol in sols:
-      plt.plot(t,sol)
+
+# steps, t, sols =  EXPLICIT.Euler()
+steps, t, sols, local_errors, global_errors =  IMPLICIT.Euler(exact_sol=[exactsol, exactvarsol])
+# steps, t, sols =  IMPLICIT.Midpoint()
+# steps, t, sols =  IMPLICIT.Crank_Nicolson()
+# steps, t, sols =  IMPLICIT.QZ_DIRK()
+# steps, t, sols =  IMPLICIT.KS_DIRK()
+# steps, t, sols =  IMPLICIT.RADAU_IA_3o()
+# steps, t, sols =  IMPLICIT.RADAU_IIA_3o()
+
+# for sol in sols:
+#     plt.plot(t,sol)
+    
+for local_error in local_errors:
+    plt.plot(t[1:],local_error)
+for global_error in global_errors:
+    plt.plot(t[1:],global_error)
+    
+plt.yscale('log')
+
+plt.legend(["sol. local","diff. sol. local","sol. global","diff. sol. global"])
+
+# plt.plot(t,sols[0])
+# plt.plot(t,sols[1])
+# print(sols[0][2]-exactsol(t[2]))
+# print(sols[0][4]-exactsol(t[4]))
+
                  
-print('steps: '+ str(steps))
+print('steps:',steps)
 
 
 
+X=np.linspace(t_0,t_F,100)
+# plt.plot(X,exactsol(X), 'm-')
+# plt.plot(X,exactvarsol(X), 'r-')
+
+# plt.legend(["sol.","var. sol.","diff", "exact", "var. exact"])
+
+
+print("sol. max error:",max([abs(sols[0][i]-exactsol(t[i])) for i in range(steps)]))
+print("var. sol. max error:",max([abs(sols[1][i]-exactvarsol(t[i])) for i in range(steps)]))
 
 
 
@@ -111,8 +147,4 @@ print('steps: '+ str(steps))
 #       plt.plot(t,sol)
       
       
-X=np.linspace(0,2,100)
-plt.plot(X,[2*np.exp(-10*x) for x in X], 'm-')
-plt.plot(X,[1*np.exp(-10*x) for x in X], 'r-')
 
-plt.legend(["sol.","var. sol.", "exact", "var. exact"])
